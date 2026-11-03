@@ -1,13 +1,53 @@
-
 import React, { useState } from 'react';
+import { db } from '../firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 function Registration() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(`Registered: ${name}, ${email}`);
+
+    // Name validation
+if (name.trim().length < 3) {
+  alert("Name must be at least 3 characters");
+  return;
+}
+
+// Email validation
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+if (!emailPattern.test(email)) {
+  alert("Please enter a valid email");
+  return;
+}
+
+// Phone validation
+if (!/^\d{10}$/.test(phone)) {
+  alert("Phone must be exactly 10 digits");
+  return;
+}
+
+    try {
+      await addDoc(collection(db, 'users'), {
+        name: name,
+        email: email,
+        phone: phone,
+        timestamp: new Date()
+      });
+
+      alert('Registration successful!');
+
+      setName('');
+      setEmail('');
+      setPhone('');
+
+    } catch (err) {
+      console.error('Error adding document:', err);
+      alert('Error submitting form. Check console.');
+    }
   };
 
   return (
@@ -31,6 +71,16 @@ function Registration() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="form-control"
+          />
+        </div>
+
+        <div className="mb-3">
+          <label>Phone</label>
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
             className="form-control"
           />
         </div>
